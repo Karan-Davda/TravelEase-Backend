@@ -1,11 +1,11 @@
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
-import { getUserByIdentifier } from '../services/userService.js';
+import { getUserByIdentifier, getRoleIdByName } from '../services/userService.js';
 import { generateOTP, storeOTP, verifyStoredOTP } from '../services/otpService.js';
 import { sendOtpToUser } from '../utils/otpSender.js';
 import { generateToken } from '../utils/jwtUtil.js';
-import { User, Role } from '../models/index.js';
 import { Op } from 'sequelize';
+import db from '../config/database.js';
+const { User, Role } = db.models;
 
 const getRedirectPath = (role) => {
     switch (role) {
@@ -133,5 +133,209 @@ export const signUpTraveler = async (req, res) => {
     } catch (error) {
         console.error('Traveler signup failed:', error);
         return res.status(500).json({ message: 'Signup failed, please try again.' });
+    }
+};
+
+export const registerAgency = async (req, res) => {
+    const {
+      firstName,
+      lastName,
+      email,
+      mobile,
+      password,
+      confirmPassword,
+      dateOfBirth,
+      address,
+      consent,
+      agencyDetails
+    } = req.body;
+  
+    const {
+      agencyName,
+      businessLicenseNo,
+      agencyAddress,
+      taxIdentificationNo,
+      contactDesignation,
+      agencyEmail,
+      agencyPhone,
+      logoImgPath,
+      taxDocument,
+      licenseDocument
+    } = agencyDetails;
+  
+    if (password !== confirmPassword) {
+      return res.status(400).json({ message: 'Passwords do not match' });
+    }
+  
+    const t = await db.sequelize.transaction();
+    try {
+      const roleId = await getRoleIdByName('TravelAgency');
+  
+      const existing = await db.models.User.findOne({
+        where: {
+          [db.Sequelize.Op.or]: [{ Email: email }, { Mobile: mobile }]
+        }
+      });
+  
+      if (existing) {
+        return res.status(409).json({ message: 'User with email or phone already exists' });
+      }
+  
+      const hashedPassword = await bcrypt.hash(password, 10);
+  
+      const user = await db.models.User.create({
+        RoleID: roleId,
+        FirstName: firstName,
+        LastName: lastName,
+        Email: email,
+        Mobile: mobile,
+        Password: hashedPassword,
+        DateOfBirth: dateOfBirth,
+        Address: address,
+        IsPartner: true,
+        IsEmail: consent?.isEmail ?? false,
+        IsSMS: consent?.isSMS ?? false,
+        IsWhatsapp: false,
+        Status: 'Pending',
+        Created: new Date(),
+        Modified: new Date(),
+        ModifiedBy: null
+      }, { transaction: t });
+  
+      await db.models.TravelAgency.create({
+        UserID: user.UserID,
+        BusinessLicenseNo: businessLicenseNo,
+        Address: agencyAddress,
+        TaxIdentificationNo: taxIdentificationNo,
+        PrimaryContactPersonName: `${firstName} ${lastName}`,
+        PrimaryContactPersonDesignation: contactDesignation,
+        Email: agencyEmail,
+        Phone: agencyPhone,
+        LogoImgPath: logoImgPath,
+        TaxDocument: taxDocument,
+        LicenseDocument: licenseDocument,
+        Created: new Date(),
+        Modified: new Date(),
+        ModifiedBy: user.UserID
+      }, { transaction: t });
+  
+      await t.commit();
+  
+      const token = generateToken({ userId: user.UserID, role: 'TravelAgency' });
+  
+      return res.status(201).json({
+        message: 'Signup successful. Pending approval.',
+        token,
+        role: 'TravelAgency',
+        redirectTo: getRedirectPath('TravelAgency')
+      });
+  
+    } catch (err) {
+      await t.rollback();
+      console.error('Travel agency signup failed:', err);
+      return res.status(500).json({ message: 'Travel agency signup failed' });
+    }
+};
+
+export const registerTourGuide = async (req, res) => {
+    const {
+      firstName,
+      lastName,
+      email,
+      mobile,
+      password,
+      confirmPassword,
+      dateOfBirth,
+      address,
+      consent,
+      guideDetails
+    } = req.body;
+  
+    const {
+      languageSpoken,
+      specialization,
+      yearsOfExperience,
+      cityIds // array of city IDs for TourGuideTran
+    } = guideDetails;
+  
+    if (password !== confirmPassword) {
+      return res.status(400).json({ message: 'Passwords do not match' });
+    }
+  
+    const t = await db.sequelize.transaction();
+    try {
+      const roleId = await getRoleIdByName('TourGuide');
+  
+      const existingUser = await db.models.User.findOne({
+        where: {
+          [db.Sequelize.Op.or]: [{ Email: email }, { Mobile: mobile }]
+        }
+      });
+  
+      if (existingUser) {
+        return res.status(409).json({ message: 'User already exists' });
+      }
+  
+      const hashedPassword = await bcrypt.hash(password, 10);
+  
+      const user = await db.models.User.create({
+        RoleID: roleId,
+        FirstName: firstName,
+        LastName: lastName,
+        Email: email,
+        Mobile: mobile,
+        Password: hashedPassword,
+        DateOfBirth: dateOfBirth,
+        Address: address,
+        IsPartner: true,
+        IsEmail: consent?.isEmail ?? false,
+        IsSMS: consent?.isSMS ?? false,
+        IsWhatsapp: false,
+        Status: 'Pending',
+        Created: new Date(),
+        Modified: new Date(),
+        ModifiedBy: null
+      }, { transaction: t });
+  
+      const tourGuide = await db.models.TourGuide.create({
+        UserID: user.UserID,
+        LanguageSpoken: languageSpoken,
+        Specialization: specialization || null,
+        YearsOfExperience: yearsOfExperience,
+        Address: address,
+        Status: 'Pending',
+        Created: new Date(),
+        Modified: new Date(),
+        ModifiedBy: user.UserID
+      }, { transaction: t });
+  
+      // Insert into TourGuideTran (many-to-many city map)
+      if (Array.isArray(cityIds) && cityIds.length > 0) {
+        const cityMappings = cityIds.map((cityId) => ({
+          TourGuideID: tourGuide.TourGuideID,
+          CityID: cityId,
+          Created: new Date(),
+          Modified: new Date(),
+          ModifiedBy: user.UserID
+        }));
+  
+        await db.models.TourGuideTran.bulkCreate(cityMappings, { transaction: t });
+      }
+  
+      await t.commit();
+  
+      const token = generateToken({ userId: user.UserID, role: 'TourGuide' });
+  
+      return res.status(201).json({
+        message: 'Tour guide registered successfully. Pending admin approval.',
+        token,
+        role: 'TourGuide',
+        redirectTo: getRedirectPath('TourGuide')
+      });
+  
+    } catch (err) {
+      await t.rollback();
+      console.error('Tour guide signup failed:', err);
+      return res.status(500).json({ message: 'Tour guide signup failed' });
     }
 };

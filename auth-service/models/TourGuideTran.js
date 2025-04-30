@@ -1,18 +1,18 @@
 import { DataTypes } from 'sequelize';
 
-const Role = (sequelize) => {
-  return sequelize.define('Role', {
-    RoleID: {
+const TourGuideTran = (sequelize) => {
+  return sequelize.define('TourGuideTran', {
+    TourGuideTranID: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true
     },
-    RoleName: {
-      type: DataTypes.STRING(20),
+    TourGuideID: {
+      type: DataTypes.INTEGER,
       allowNull: false
     },
-    Status: {
-      type: DataTypes.STRING(20),
+    CityID: {
+      type: DataTypes.INTEGER,
       allowNull: false
     },
     Created: {
@@ -24,13 +24,12 @@ const Role = (sequelize) => {
       allowNull: false
     },
     ModifiedBy: {
-      type: DataTypes.INTEGER,
-      allowNull: true
+      type: DataTypes.INTEGER
     }
   }, {
-    tableName: 'Role',
+    tableName: 'TourGuideTran',
     timestamps: false
   });
 };
 
-export default Role;
+export default TourGuideTran;
