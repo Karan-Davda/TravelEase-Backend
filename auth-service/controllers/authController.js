@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import { getUserByIdentifier, getRoleIdByName } from '../services/userService.js';
 import { generateOTP, storeOTP, verifyStoredOTP } from '../services/otpService.js';
+import { getLandingPagePath } from '../services/menuService.js';
 import { sendOtpToUser } from '../utils/otpSender.js';
 import { generateToken } from '../utils/jwtUtil.js';
 import { Op } from 'sequelize';
@@ -27,7 +28,7 @@ export const loginWithPassword = async (req, res) => {
         if (!validPassword) return res.status(401).json({ message: 'Invalid password' });
 
         const token = generateToken({ userId: user.UserID, role: user.Role.RoleName });
-        return res.json({ token, role: user.Role.RoleName, redirectTo: getRedirectPath(user.Role.RoleName) });
+        return res.json({ token, role: user.Role.RoleName, redirectTo: await getLandingPagePath(user.RoleID) });
     } catch (err) {
         console.error(err);
         return res.status(500).json({ message: 'Login failed' });
@@ -64,7 +65,7 @@ export const verifyOtp = async (req, res) => {
         const user = await getUserByIdentifier(identifier);
         const token = generateToken({ userId: user.UserID, role: user.Role.RoleName });
 
-        return res.json({ token, role: user.Role.RoleName, redirectTo: getRedirectPath(user.Role.RoleName) });
+        return res.json({ token, role: user.Role.RoleName, redirectTo: await getLandingPagePath(user.RoleID) });
     } catch (err) {
         console.error(err);
         return res.status(500).json({ message: 'OTP verification failed' });

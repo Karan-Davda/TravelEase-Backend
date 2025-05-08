@@ -1,8 +1,9 @@
 import express from 'express';
+import { applySecurity } from './config/security.js'
 import dotenv from 'dotenv';
-import cors from 'cors';
 import bookingRoutes from './routes/bookingRoutes.js';
-import { applySecurity } from './config/security'
+import geoConfigRoutes from './routes/geoConfigurationRoutes.js';
+import geoRoutes from './routes/geoRoutes.js';
 
 dotenv.config();
 
@@ -16,8 +17,15 @@ app.get('/ping', (req, res) => {
   res.send('Booking Service is running ✅');
 });
 
+app.use((req, res, next) => {
+  console.log(`🛡️ [Booking SERVICE] Received: ${req.method} ${req.originalUrl}`);
+  next();
+});
+
 // Routes
 app.use('/api/bookings', bookingRoutes);
+app.use('/api/admin/geo', geoConfigRoutes)
+app.use('/api/search', geoRoutes);
 
 app.listen(PORT, () => {
   console.log(`Booking Service running on http://localhost:${PORT}`);

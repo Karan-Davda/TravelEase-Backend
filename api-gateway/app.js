@@ -14,22 +14,77 @@ app.get('/ping', (req, res) => res.send('API Gateway is running ✅'));
 
 // 🔐 AUTH SERVICE PROXY - PRESERVE FULL PATH
 app.use(
-  '/',
+  '/api/auth',
   createProxyMiddleware({
-    target: process.env.AUTH_SERVICE,
+    target: '' + process.env.AUTH_SERVICE + '/api/auth',
     changeOrigin: true,
-    router: {
-      '/api/auth': process.env.AUTH_SERVICE
-    },
-    logLevel: 'debug',
-    preserveHeaderKeyCase: true
   })
 );
 
-app.use('/api/bookings', createProxyMiddleware({ target: process.env.BOOKING_SERVICE, changeOrigin: true }));
-app.use('/api/partners', createProxyMiddleware({ target: process.env.PARTNER_SERVICE, changeOrigin: true }));
-app.use('/api/payments', createProxyMiddleware({ target: process.env.PAYMENT_SERVICE, changeOrigin: true }));
-app.use('/api/notifications', createProxyMiddleware({ target: process.env.NOTIFICATION_SERVICE, changeOrigin: true }));
+app.use(
+  '/api/bookings',
+  createProxyMiddleware({
+    target: process.env.BOOKING_SERVICE + '/api/bookings',
+    changeOrigin: true
+  })
+);
+
+app.use(
+  '/api/partners',
+  createProxyMiddleware({
+    target: process.env.PARTNER_SERVICE + '/api/partners',
+    changeOrigin: true
+  })
+);
+
+app.use(
+  '/api/payments',
+  createProxyMiddleware({
+    target: process.env.PAYMENT_SERVICE,
+    changeOrigin: true
+  })
+);
+
+app.use(
+  '/api/notifications',
+  createProxyMiddleware({
+    target: process.env.NOTIFICATION_SERVICE,
+    changeOrigin: true
+  })
+);
+
+app.use(
+  '/api/admin/geo',
+  createProxyMiddleware({
+    target: process.env.BOOKING_SERVICE + '/api/admin/geo',
+    changeOrigin: true,
+  })
+);
+
+app.use(
+  '/api/search',
+  createProxyMiddleware({
+    target: process.env.BOOKING_SERVICE + '/api/search',
+    changeOrigin: true,
+  })
+);
+
+app.use(
+  '/api/admin/access',
+  createProxyMiddleware({
+    target: process.env.AUTH_SERVICE + '/api/admin/access',
+    changeOrigin: true
+  })
+);
+
+app.use(
+  '/api/admin/notifications',
+  createProxyMiddleware({
+    target: 'http://localhost:3004',
+    changeOrigin: true,
+    pathRewrite: { '^/api/admin/notifications': '/api/admin' }
+  })
+);
 
 // Start
 const PORT = process.env.PORT || 3000;

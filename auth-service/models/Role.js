@@ -1,4 +1,5 @@
 import { DataTypes } from 'sequelize';
+import sequelize from '../config/database.js';
 
 const Role = (sequelize) => {
   return sequelize.define('Role', {
@@ -17,11 +18,13 @@ const Role = (sequelize) => {
     },
     Created: {
       type: DataTypes.DATE,
-      allowNull: false
+      allowNull: false,
+      defaultValue: DataTypes.NOW
     },
     Modified: {
       type: DataTypes.DATE,
-      allowNull: false
+      allowNull: false,
+      defaultValue: DataTypes.NOW
     },
     ModifiedBy: {
       type: DataTypes.INTEGER,

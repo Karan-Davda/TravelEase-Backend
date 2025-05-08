@@ -2,7 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import { applySecurity } from './config/security.js'
 import authRoutes from './routes/authRoutes.js'
-import menuRoutes from './routes/menuRoutes.js'
+import accessRoutes from './routes/accessRoutes.js'
 
 dotenv.config();
 
@@ -23,7 +23,7 @@ app.use((req, res, next) => {
 });
 
 app.use('/api/auth', authRoutes);
-app.use('/api/menu', menuRoutes);
+app.use('/api/admin/access', accessRoutes);
 
 // Start server
 app.listen(PORT, () => {

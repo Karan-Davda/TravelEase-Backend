@@ -1,12 +1,13 @@
 // routes/menuRoutes.js
 import express from 'express';
-import { getAllMenus, createMenu, updateMenu, deleteMenu } from '../controllers/menuController.js';
+import { getAllMenus, getMenuById, createMenu, updateMenu, deleteMenu } from '../controllers/menuController.js';
 
 const router = express.Router();
 
-router.get('/', getAllMenus);
 router.post('/', createMenu);
-router.put('/:menuId', updateMenu);
-router.delete('/:menuId', deleteMenu);
+router.get('/', getAllMenus);
+router.get('/:id', getMenuById);
+router.put('/:id', updateMenu);
+router.delete('/:id', deleteMenu);
 
 export default router;
