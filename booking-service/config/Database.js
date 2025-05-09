@@ -12,6 +12,7 @@ import createCountyModel from '../models/County.js';
 import createExperiencesModel from '../models/experiences.js';
 import createTransportationModel from '../models/Transportation.js';
 import createTransportationTypeModel from '../models/TransportationType.js';
+import createTransportationTranModel from '../models/TransportationTran.js';
 import createAccommodationModel from '../models/Accommodation.js';
 import createAccommodationTypeModel from '../models/AccommodationType.js';
 
@@ -30,6 +31,7 @@ const County = createCountyModel(sequelize);
 const Experience = createExperiencesModel(sequelize);
 const Transportation = createTransportationModel(sequelize);
 const TransportationType = createTransportationTypeModel(sequelize);
+const TransportationTran = createTransportationTranModel(sequelize);
 const Accommodation = createAccommodationModel(sequelize);
 const AccommodationType = createAccommodationTypeModel(sequelize);
 
@@ -77,8 +79,9 @@ const db = {
     Experience,
     Transportation,
     TransportationType,
+    TransportationTran,
     Accommodation,
-    AccommodationType
+    AccommodationType,
   }
 };
 

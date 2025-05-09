@@ -70,6 +70,14 @@ app.use(
 );
 
 app.use(
+  '/api/transportation',
+  createProxyMiddleware({
+    target: process.env.BOOKING_SERVICE + '/api/transportation',
+    changeOrigin: true,
+  })
+);
+
+app.use(
   '/api/admin/access',
   createProxyMiddleware({
     target: process.env.AUTH_SERVICE + '/api/admin/access',
