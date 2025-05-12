@@ -1,4 +1,5 @@
 import db from '../config/database.js';
+import { match } from 'path-to-regexp';
 const { Menu } = db.models;
 
 export const createMenu = async (req, res) => {
@@ -36,6 +37,39 @@ export const getMenuById = async (req, res) => {
   } catch (err) {
     console.error('Fetch menu by ID failed:', err);
     res.status(500).json({ message: 'Failed to fetch menu' });
+  }
+};
+
+export const checkLoginRequiredByUrl = async (req, res) => {
+  try {
+    const { url } = req.query;
+
+    if (!url) {
+      return res.status(400).json({ message: 'URL is required as query param' });
+    }
+
+    const allMenus = await Menu.findAll({
+      attributes: ['MenuID', 'MenuName', 'URL', 'IsLogginRequired']
+    });
+
+    const matchedMenu = allMenus.find(menu => {
+      const matcher = match(menu.URL, { decode: decodeURIComponent });
+      return matcher(url.toString());
+    });
+
+    if (!matchedMenu) {
+      return res.status(404).json({ message: 'Menu not found for provided URL' });
+    }
+
+    res.status(200).json({
+      MenuID: matchedMenu.MenuID,
+      MenuName: matchedMenu.MenuName,
+      IsLogginRequired: matchedMenu.IsLogginRequired
+    });
+
+  } catch (err) {
+    console.error('Login check failed:', err);
+    res.status(500).json({ message: 'Failed to check login requirement' });
   }
 };
 

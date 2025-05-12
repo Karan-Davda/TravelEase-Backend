@@ -66,7 +66,8 @@ export const fetchTransportByTypeName = async (req, res) => {
       where: onwardFilters,
       include: [
         { model: City, as: 'OriginCity', attributes: ['CityName'] },
-        { model: City, as: 'DestinationCity', attributes: ['CityName'] }
+        { model: City, as: 'DestinationCity', attributes: ['CityName'] },
+        { model: TransportationType, as: 'Type', attributes: ['TransportationTypeID', 'TransportationType'] }
       ],
       order: [['DepartureTime', 'ASC']]
     });
@@ -74,6 +75,8 @@ export const fetchTransportByTypeName = async (req, res) => {
     const onward = onwardResults.map(t => ({
       TransportationID: t.TransportationID,
       TransportationName: t.TransportationName,
+      TransportationTypeID: t.Type?.TransportationTypeID,
+      TransportationType: t.Type?.TransportationType,
       FromCityName: t.OriginCity?.CityName,
       ToCityName: t.DestinationCity?.CityName,
       DepartureTime: t.DepartureTime.toLocaleString('en-US', { timeZone: 'America/New_York' }),
@@ -187,5 +190,19 @@ export const getSeatMap = async (req, res) => {
   } catch (err) {
     console.error('[getSeatMap] Failed:', err);
     res.status(500).json({ message: 'Unable to fetch seat map' });
+  }
+};
+
+export const getAllTransportationTypes = async (req, res) => {
+  try {
+    const types = await TransportationType.findAll({
+      attributes: ['TransportationTypeID', 'TransportationType'],
+      order: [['TransportationTypeID', 'ASC']],
+    });
+
+    res.status(200).json(types);
+  } catch (error) {
+    console.error('[Fetch Transportation Types Error]', error);
+    res.status(500).json({ message: 'Failed to fetch transportation types.' });
   }
 };

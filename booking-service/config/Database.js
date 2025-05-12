@@ -15,6 +15,10 @@ import createTransportationTypeModel from '../models/TransportationType.js';
 import createTransportationTranModel from '../models/TransportationTran.js';
 import createAccommodationModel from '../models/Accommodation.js';
 import createAccommodationTypeModel from '../models/AccommodationType.js';
+import createAccommodationTranModel from '../models/AccommodationTran.js';
+
+import createBookingsModel from '../models/Bookings.js';
+import createBookingsTranModel from '../models/Bookings_Tran.js';
 
 // Setup Sequelize instance
 const sequelize = new Sequelize(process.env.DB_URL, {
@@ -34,7 +38,10 @@ const TransportationType = createTransportationTypeModel(sequelize);
 const TransportationTran = createTransportationTranModel(sequelize);
 const Accommodation = createAccommodationModel(sequelize);
 const AccommodationType = createAccommodationTypeModel(sequelize);
+const AccommodationTran = createAccommodationTranModel(sequelize);
 
+const Bookings = createBookingsModel(sequelize);
+const BookingsTran = createBookingsTranModel(sequelize);
 
 // Define associations
 State.belongsTo(Country, { foreignKey: 'CountryID' });
@@ -67,6 +74,21 @@ Transportation.belongsTo(TransportationType, {
   as: 'Type'
 });
 
+
+Bookings.hasMany(BookingsTran, { foreignKey: 'BookingID' });
+BookingsTran.belongsTo(Bookings, { foreignKey: 'BookingID' });
+
+TransportationTran.hasMany(BookingsTran, { foreignKey: 'TransportationTranID' });
+BookingsTran.belongsTo(TransportationTran, { foreignKey: 'TransportationTranID' });
+
+AccommodationTran.hasMany(BookingsTran, { foreignKey: 'AccommodationTranID' });
+BookingsTran.belongsTo(AccommodationTran, { foreignKey: 'AccommodationTranID' });
+
+City.hasMany(BookingsTran, { foreignKey: 'FromCityID', as: 'BookingFromCity' });
+City.hasMany(BookingsTran, { foreignKey: 'ToCityID', as: 'BookingToCity' });
+BookingsTran.belongsTo(City, { foreignKey: 'FromCityID', as: 'BookingFromCity' });
+BookingsTran.belongsTo(City, { foreignKey: 'ToCityID', as: 'BookingToCity' });
+
 // Build db object
 const db = {
   sequelize,
@@ -82,6 +104,8 @@ const db = {
     TransportationTran,
     Accommodation,
     AccommodationType,
+    Bookings,
+    BookingsTran
   }
 };
 

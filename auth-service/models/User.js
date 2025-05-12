@@ -41,6 +41,14 @@ const User = (sequelize) => {
       type: DataTypes.BOOLEAN,
       defaultValue: false
     },
+    IsTravelAgency: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
+    IsTourGuide: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
     IsEmail: {
       type: DataTypes.BOOLEAN,
       defaultValue: false

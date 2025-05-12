@@ -40,7 +40,15 @@ app.use(
 app.use(
   '/api/payments',
   createProxyMiddleware({
-    target: process.env.PAYMENT_SERVICE,
+    target: process.env.PAYMENT_SERVICE + '/api/payments',
+    changeOrigin: true
+  })
+);
+
+app.use(
+  '/api/stripe/webhook',
+  createProxyMiddleware({
+    target: process.env.PAYMENT_SERVICE + '/api/stripe/webhook',
     changeOrigin: true
   })
 );
@@ -73,6 +81,14 @@ app.use(
   '/api/transportation',
   createProxyMiddleware({
     target: process.env.BOOKING_SERVICE + '/api/transportation',
+    changeOrigin: true,
+  })
+);
+
+app.use(
+  '/api/accommodation',
+  createProxyMiddleware({
+    target: process.env.BOOKING_SERVICE + '/api/accommodation',
     changeOrigin: true,
   })
 );

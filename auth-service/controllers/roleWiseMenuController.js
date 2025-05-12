@@ -1,5 +1,5 @@
 import db from '../config/database.js';
-const { RoleWiseMenu } = db.models;
+const { RoleWiseMenu, Menu } = db.models;
 
 export const createRoleWiseMenu = async (req, res) => {
   const { RoleID, IsLandingPage } = req.body;
@@ -64,6 +64,28 @@ export const getRoleWiseMenuById = async (req, res) => {
   } catch (err) {
     console.error('Fetch role-wise menu by ID failed:', err);
     res.status(500).json({ message: 'Failed to fetch record' });
+  }
+};
+
+export const getRoleWiseMenusByRoleId = async (req, res) => {
+  try {
+    const { roleId } = req.params;
+
+    const records = await RoleWiseMenu.findAll({
+      where: { RoleID: roleId },
+      include: [
+        {
+          model: Menu,
+          attributes: ['MenuName', 'DisplayName', 'IsInternalScreen', 'URL']  // Include only MenuName from Menu
+        }
+      ],
+      order: [['IsLandingPage', 'DESC']]
+    });
+
+    res.json(records);
+  } catch (err) {
+    console.error('Fetch by RoleID failed:', err);
+    res.status(500).json({ message: 'Failed to fetch records by RoleID' });
   }
 };
 

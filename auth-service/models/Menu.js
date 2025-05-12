@@ -12,6 +12,20 @@ const Menu = (sequelize) => {
       type: DataTypes.STRING(100),
       allowNull: false,
     },
+    DisplayName: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
+    },
+    IsLogginRequired: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: true,
+    },
+    IsInternalScreen: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: true,
+    },
     URL: {
       type: DataTypes.STRING(2000),
       allowNull: false,

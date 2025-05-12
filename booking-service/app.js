@@ -5,6 +5,7 @@ import bookingRoutes from './routes/bookingRoutes.js';
 import geoConfigRoutes from './routes/geoConfigurationRoutes.js';
 import geoRoutes from './routes/geoRoutes.js';
 import transportationRoutes from './routes/transportationRoutes.js';
+import accommodationRoutes from './routes/accommodationRoutes.js';
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/admin/geo', geoConfigRoutes);
 app.use('/api/search', geoRoutes);
 app.use('/api/transportation', transportationRoutes);
+app.use('/api/accommodation', accommodationRoutes);
 
 app.listen(PORT, () => {
   console.log(`Booking Service running on http://localhost:${PORT}`);

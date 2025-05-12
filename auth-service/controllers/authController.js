@@ -27,6 +27,9 @@ export const loginWithPassword = async (req, res) => {
         const validPassword = await bcrypt.compare(password, user.Password);
         if (!validPassword) return res.status(401).json({ message: 'Invalid password' });
 
+        if(user.Status !== 'Active')
+          return res.status(401).json({ message: 'Your Account is not Activated Yet!!' });
+
         const token = generateToken({ userId: user.UserID, role: user.Role.RoleName });
         return res.json({ token, role: user.Role.RoleName, redirectTo: await getLandingPagePath(user.RoleID) });
     } catch (err) {
@@ -194,6 +197,8 @@ export const registerAgency = async (req, res) => {
         DateOfBirth: dateOfBirth,
         Address: address,
         IsPartner: true,
+        IsTravelAgency: true,
+        IsTourGuide: false,
         IsEmail: consent?.isEmail ?? false,
         IsSMS: consent?.isSMS ?? false,
         IsWhatsapp: false,
@@ -289,6 +294,8 @@ export const registerTourGuide = async (req, res) => {
         DateOfBirth: dateOfBirth,
         Address: address,
         IsPartner: true,
+        IsTravelAgency: false,
+        IsTourGuide: true,
         IsEmail: consent?.isEmail ?? false,
         IsSMS: consent?.isSMS ?? false,
         IsWhatsapp: false,
@@ -339,4 +346,26 @@ export const registerTourGuide = async (req, res) => {
       console.error('Tour guide signup failed:', err);
       return res.status(500).json({ message: 'Tour guide signup failed' });
     }
+};
+
+// authController.js
+export const getProfile = async (req, res) => {
+  try {
+    const user = await User.findByPk(req.user.id, {
+      attributes: ['UserID', 'FirstName', 'LastName', 'Email', 'RoleID']
+    });
+
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    return res.status(200).json({
+      userId: user.UserID,
+      FirstName: user.FirstName,
+      LastName: user.LastName,
+      email: user.Email,
+      role: user.RoleID
+    });
+  } catch (err) {
+    console.error('[getUserProfile] Error:', err);
+    res.status(500).json({ message: 'Server error fetching profile' });
+  }
 };
